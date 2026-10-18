@@ -1,0 +1,10 @@
+1. |chi2| triple well 63.8 nm/V, ADQW 120.7 nm/V
+   triple-well subbands (meV above ground): [  0.   49.7 124.6 247.8 306.6]
+2. chi2(+F) + chi2(-F) = 1.40e-06 pm/V (should be ~0)
+3. triple-well lifetimes: 2->1 2.62 ps, 3->2 0.79 ps, 3->1 1.96 ps
+4. I = 0 MW/cm2: |chi2| 63.8 nm/V, alpha(w) 600 1/cm
+4. I = 1 MW/cm2: |chi2| 35.1 nm/V, alpha(w) 490 1/cm
+4. I = 3 MW/cm2: |chi2| 18.9 nm/V, alpha(w) 342 1/cm
+5. n_eff 3.231 / 3.338, Gamma 0.39 / 0.52, loss 3.30 / 0.16 1/cm, Lcoh 23.5 um
+6. plateau field 54.6 kV/cm; QPM coefficient of sign(F) = 0.637 (ideal 2/pi = 0.637)
+7. 1.26 W pump: peak SH conversion 0.121% at 63 um

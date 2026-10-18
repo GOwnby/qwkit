@@ -1,0 +1,39 @@
+start rerun_nl05.sh Tue Oct 13 08:22:39 CDT 2026
+figures written to /home/claude/qwkit/paper_nl05/figures
+end rerun_nl05.sh Tue Oct 13 08:24:51 CDT 2026
+start rerun_n1.sh Tue Oct 13 08:24:51 CDT 2026
+ALL-DONE
+end rerun_n1.sh Tue Oct 13 08:56:00 CDT 2026
+start rerun_nl02.sh Tue Oct 13 08:56:00 CDT 2026
+Traceback (most recent call last):
+  File "/home/claude/qwkit/studies/nl02/dm_check.py", line 107, in <module>
+    print("weak-field check (eta_dm/eta_re):", dm.propagate(1e-3, 30)["eta"] / lad.propagate(1e-3, npts=4000)["eta"], flush=True)
+                                               ~~~~~~~~~~~~^^^^^^^^^^
+  File "/home/claude/qwkit/studies/nl02/dm_check.py", line 83, in propagate
+    sol = solve_ivp(rhs, (0, xmax), [np.sqrt(p0), 0, 0, 0], t_eval=xs, rtol=rtol, atol=1e-13 * (1 + p0), method="DOP853")
+  File "/usr/local/lib/python3.13/dist-packages/scipy/integrate/_ivp/ivp.py", line 626, in solve_ivp
+    solver = method(fun, t0, y0, tf, vectorized=vectorized, **options)
+  File "/usr/local/lib/python3.13/dist-packages/scipy/integrate/_ivp/rk.py", line 668, in __init__
+    super().__init__(fun, t0, y0, t_bound, max_step, rtol, atol,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     vectorized, first_step, **extraneous)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/integrate/_ivp/rk.py", line 94, in __init__
+    self.f = self.fun(self.t, self.y)
+             ~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/integrate/_ivp/base.py", line 158, in fun
+    return self.fun_single(t, y)
+           ~~~~~~~~~~~~~~~^^^^^^
+  File "/usr/local/lib/python3.13/dist-packages/scipy/integrate/_ivp/base.py", line 24, in fun_wrapped
+    return np.asarray(fun(t, y), dtype=dtype)
+                      ~~~^^^^^^
+  File "/home/claude/qwkit/studies/nl02/dm_check.py", line 79, in rhs
+    d1 = 1j * c1 * (r[1, 0] + np.sqrt(self.r23) * r[2, 1]) - self.b1 / 2 * e1 - 1j * ph1 * e1
+                                                                                     ^^^
+UnboundLocalError: cannot access local variable 'ph1' where it is not associated with a value
+FAILED rerun_nl02.sh
+end rerun_nl02.sh Tue Oct 13 09:50:13 CDT 2026
+start rerun_ms02.sh Tue Oct 13 09:50:13 CDT 2026
+ok
+end rerun_ms02.sh Tue Oct 13 11:51:27 CDT 2026
+QUEUE-DONE

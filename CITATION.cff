@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use qwkit, please cite it as below."
+title: "qwkit: quantum-well intersubband optics toolkit"
+version: 0.7.0
+date-released: 2026-10-14
+license: MIT
+authors:
+  - family-names: Ownby
+    given-names: Gracen
+    affiliation: "University of Oklahoma"
+keywords: [quantum well, intersubband, nonlinear optics, Schrodinger-Poisson, quasi-phase matching]

@@ -1,0 +1,9 @@
+{
+  "title": "qwkit: quantum-well intersubband optics toolkit",
+  "upload_type": "software",
+  "version": "0.5.0",
+  "creators": [{"name": "Ownby, Gracen", "affiliation": "University of Oklahoma"}],
+  "license": "MIT",
+  "keywords": ["quantum well", "intersubband", "nonlinear optics", "Schrodinger-Poisson", "quasi-phase matching"],
+  "description": "Validated Python toolkit for quantum-well intersubband optics: self-consistent Schrodinger-Poisson states with nonparabolicity and depolarisation, LO-phonon scattering rates, density-matrix second-order susceptibility, multilevel saturation, planar waveguide modes, electrode fields and coupled-mode second-harmonic propagation with quasi-phase matching."
+}

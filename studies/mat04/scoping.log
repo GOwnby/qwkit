@@ -1,0 +1,8 @@
+tb 2.5 mb 0.4 eps_inf 3.3: E21 149->185 meV, E31 364->399 | |chi2|max 140 nm/V at 181 meV -> 279 nm/V at 197 meV
+tb 2.5 mb 0.4 eps_inf 4.3: E21 149->177 meV, E31 364->391 | |chi2|max 140 nm/V at 181 meV -> 234 nm/V at 194 meV
+tb 2.5 mb 1.0 eps_inf 3.3: E21 115->139 meV, E31 324->364 | |chi2|max 92 nm/V at 120 meV -> 98 nm/V at 139 meV
+tb 2.5 mb 1.0 eps_inf 4.3: E21 115->134 meV, E31 324->355 | |chi2|max 92 nm/V at 120 meV -> 100 nm/V at 133 meV
+tb 5.5 mb 0.4 eps_inf 3.3: E21 145->153 meV, E31 348->393 | |chi2|max 51 nm/V at 173 meV -> 39 nm/V at 153 meV
+tb 5.5 mb 0.4 eps_inf 4.3: E21 145->151 meV, E31 348->383 | |chi2|max 51 nm/V at 173 meV -> 41 nm/V at 151 meV
+tb 5.5 mb 1.0 eps_inf 3.3: E21 106->108 meV, E31 314->361 | |chi2|max 6 nm/V at 156 meV -> 5 nm/V at 120 meV
+tb 5.5 mb 1.0 eps_inf 4.3: E21 106->108 meV, E31 314->350 | |chi2|max 6 nm/V at 156 meV -> 5 nm/V at 120 meV

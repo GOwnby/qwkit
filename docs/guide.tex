@@ -1,0 +1,193 @@
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{mathptmx}
+\usepackage{courier}
+\usepackage{amsmath}
+\usepackage{booktabs,longtable,array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\lstset{basicstyle=\ttfamily\small,columns=fullflexible,breaklines=true,frame=single,rulecolor=\color{black!25},backgroundcolor=\color{black!3},xleftmargin=4pt,xrightmargin=4pt,upquote=true}
+\newcommand{\code}[1]{\texttt{#1}}
+\title{\texttt{qwkit} 0.5 user guide\\[2pt]\large Installation, conventions, module reference, worked examples and reproduction of published results}
+\author{Gracen Ownby\\ \small University of Oklahoma, Norman, Oklahoma, USA}
+\date{\small 10 October 2026}
+\sloppy\emergencystretch=3em
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{What the package does}
+\code{qwkit} computes the optical response of doped quantum wells from electron states to harmonic power in a waveguide, and regenerates every number and figure of the accompanying papers. It chains six calculations:
+\begin{enumerate}
+\item \textbf{Subband states} of a layered In$_{0.53}$Ga$_{0.47}$As/In$_{0.52}$Al$_{0.48}$As structure under a static field (single conduction band, BenDaniel--Duke operator, Kane nonparabolicity) --- \code{core}.
+\item \textbf{Self-consistent electrostatics} of one doped period of a voltage-biased stack (periodic Schr\"odinger--Poisson), depolarization shifts, and the resonant second-order susceptibility $\chi^{(2)}(2\omega;\omega,\omega)$ for arbitrary populations --- \code{sp}.
+\item \textbf{LO-phonon intersubband scattering rates} (Fr\"ohlich interaction) with detailed balance --- \code{scattering}.
+\item \textbf{TM modes} of a planar multilayer waveguide with complex permittivities --- \code{waveguide}.
+\item \textbf{Fields under alternating-polarity electrodes} and the QPM Fourier coefficient --- \code{electrodes}.
+\item \textbf{Saturated, pump-depleted SHG propagation} with multilevel rate equations and QPM patterns --- \code{propagation}.
+\end{enumerate}
+
+\section{Requirements and setup}
+Python 3.10 or later with \code{numpy} and \code{scipy}; \code{matplotlib} only for the figures. From the top folder of the archive (the one containing \code{pyproject.toml}), install with \code{pip install .}, or \code{pip install -e .[test,plots]} for development; \code{import qwkit} then works from anywhere. Without installing, scripts in the archive's subfolders add the top folder to \code{sys.path} themselves, and for other scripts you can set \code{PYTHONPATH} to the top folder:
+\begin{lstlisting}
+cd qwkit
+python3 tests/run_tests.py          # 25 validation tests, about 1 minute (or: pytest)
+python3 docs/examples.py            # the worked examples of Section 5
+\end{lstlisting}
+Run the test suite after any change to the package and before regenerating figures.
+
+\section{Units and conventions}
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Quantity & Unit inside the package \\ \midrule
+Position $z$, layer thicknesses, dipoles $z_{ij}$ & \AA{} (\code{core}, \code{sp}, \code{scattering}) \\
+Energies, potentials, linewidth $\Gamma$ (HWHM), photon energy $\hbar\omega$ & eV \\
+Applied field & kV/cm (positive $F$ lowers the potential towards $+z$) \\
+Sheet density per period $n_s$ & cm$^{-2}$; volume density $N$ in cm$^{-3}$ \\
+$\chi^{(2)}$ from \code{core}/\code{sp} & pm/V (complex); \code{Medium.chi} returns m/V \\
+Waveguide lengths, wavelengths & $\mu$m; modal loss in cm$^{-1}$; overlap $|\!\int f_1^2f_2^*|^2$ in $\mu$m$^{-1}$ \\
+Electrode geometry (\code{electrodes}) & m; field in V/m \\
+Intensities in \code{Medium.populations} & W/m$^2$ ($10^{10}$~W/m$^2$ = 1~MW/cm$^2$) \\
+Pump power & W; scattering rates in s$^{-1}$ \\ \bottomrule
+\end{tabular}
+\end{center}
+A structure is a list of \code{(thickness\_\AA, kind)} tuples, with \code{kind} a key of \code{core.MAT} (\code{"well"} = InGaAs, \code{"barrier"} = InAlAs); register other materials with \code{qwkit.add\_material(name, V, m, Eg, eps)}. The self-consistent routines pad the structure with half of the spacer on each side (default spacer 200~\AA{} of InAlAs) and place the donors as sheets at the period boundary. Photon energy for a 10~$\mu$m pump: \code{HW = 1.23984/10}.
+
+\section{Module reference}
+\subsection{\code{core} --- states and susceptibility}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.54\textwidth}@{}}
+\toprule
+Function & Purpose and returns \\ \midrule
+\code{build(layers, pad=100, dz=0.5, pad\_material="barrier")} & Cell-centred grid \code{z} and material arrays \code{V0, m, Eg}; \code{active} = (start, end) of the structure. \\
+\code{potential(z, V0, active, F\_kVcm)} & Adds a uniform field, zero of tilt at the structure centre. \\
+\code{solve\_states(z, V, m\_edge, Eg, nstates=6, nonparabolic=True, E\_guess=None)} & Energies (eV) and normalized wavefunctions (columns, $\sum|\psi|^2dz=1$). Index tracking keeps the $k$-th state the $k$-th eigenvalue of $H(E)$; pass \code{E\_guess} to warm-start. \\
+\code{localized(z, psi, active, thresh=0.8)} & Boolean mask of states with $\geq$80\% probability in the active region. \\
+\code{dipoles(z, psi)} & Matrix $z_{ij}$ (\AA). \\
+\code{populations(E, ns\_cm2, T)} & Fermi--Dirac subband fractions for a parabolic 2D density of states. \\
+\code{chi2\_general(E, Z, rho, hw, gamma, N\_cm3)} & Density-matrix $\chi^{(2)}$ (pm/V) for arbitrary populations; translation invariant. \\
+\code{chi2\_shg}, \code{alpha\_w}, \code{analyze}, \code{analyze\_T} & Ground-state-only $\chi^{(2)}$, linear absorption, and convenience wrappers (fixed potential). \\
+\code{wkb\_escape\_time}, \code{escape\_broadening} & WKB tunnelling estimates for biased levels. \\ \bottomrule
+\end{longtable}
+
+\subsection{\code{sp} --- self-consistent electrostatics and depolarization}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.54\textwidth}@{}}
+\toprule
+Function & Purpose and returns \\ \midrule
+\code{chi2\_sc(layers, F\_kVcm, hw, ns\_cm2=5e11, T=300, gamma=0.010, spacer=200, dz=0.5, doping="spacer", depol=True, sc=True, VH0=None, pad\_material="barrier", m\_dos=0.043, eps\_depol=13.5)} & Main entry point. Returns a dict with \code{chi} (pm/V), \code{E}, \code{Et} (depolarization-shifted transition matrix), \code{Z}, \code{rho}, \code{N} (cm$^{-3}$) and \code{r} (the raw self-consistent solution, including \code{r["VH"]} for warm starts). \code{sc=False} or \code{depol=False} switch the physics off for model-ladder studies; \code{doping} is \code{"spacer"}, \code{"wells"} or \code{"centre"}. \\
+\code{self\_consistent(...)} & Periodic Hartree iteration at fixed mean field; returns \code{z, V, VH, E, psi, ...}. \\
+\code{prepare(r, nkeep=6)} & Localized, L\"owdin-orthonormalized states, dipoles about the structure centre, populations: \code{E, psi, Z, rho}. \\
+\code{depol\_energies}, \code{chi2\_depol} & Ando depolarization shifts ($\varepsilon=13.5$) and $\chi^{(2)}$ with shifted energies. \\
+\code{state\_set(o)} & Converts a \code{chi2\_sc} result into the state-set dict used by \code{propagation.Medium}. \\ \bottomrule
+\end{longtable}
+
+\subsection{\code{scattering} --- LO-phonon relaxation}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.54\textwidth}@{}}
+\toprule
+\code{lo\_rate(z, psi\_i, psi\_f, dE, T=300, hwlo=0.0337, eps\_inf=11.6, eps\_s=13.9, m\_eff=0.043)} & Downward rate (s$^{-1}$) from the bottom of subband $i$ to $f$, emission plus absorption, Eq.~(7) of the N1 manuscript. \\
+\code{rate\_matrix(z, psi, E, T=300, **kw)} & Matrix $R_{lm}$ (s$^{-1}$, from $l$ to $m$); upward rates by detailed balance. \\
+\code{form\_integral(z, phi, Q)} & $I(Q)$ in O($N$) operations. \\ \bottomrule
+\end{longtable}
+
+\subsection{\code{waveguide} --- planar TM modes}
+Layers are dicts \code{dict(material=..., t\_um=..., N=..., mu=...)} with \code{material} one of \code{"Au"}, \code{"InP"}, \code{"InGaAs"}, \code{"InAlAs"}, \code{"stack"} (needs \code{frac\_well}) or \code{"air"}, listed from the top. \code{tm\_modes(layers, lam\_um, dz\_um=0.01, nmodes=3)} returns mode dicts with \code{neff} (complex), \code{alpha\_cm}, and the profiles \code{z}, \code{Ez}. \code{overlap(mode, z0, z1)} gives the confinement factor of $|E_z|^2$ in $[z_0,z_1]$ ($\mu$m from the top), and \code{shg\_overlap(m1, m2, z0, z1)} the nonlinear overlap $|\!\int f_1^2f_2^*dz|^2$ ($\mu$m$^{-1}$). Mid-infrared indices of the ternaries are assumed (3.43 and 3.20 at 10~$\mu$m with InP dispersion) and set the coherence length only approximately.
+
+\subsection{\code{electrodes} --- bias field and QPM coefficient}
+\code{field\_map(Lam, d, V, gap, y, nx, nmax)} returns $x$ and $E_y(x)$ at height $y$ above the ground plane for segments $\pm V$ of period \code{Lam} separated by gaps \code{gap} (all in m), uniform permittivity. \code{qpm\_coefficient(x, chi\_x, Lam)} returns $|\Lambda^{-1}\!\int\chi(x)e^{-2\pi ix/\Lambda}dx|$; it equals $(2/\pi)\chi_0$ for an ideal $\pm\chi_0$ square wave.
+
+\subsection{\code{propagation} --- saturated SHG}
+\code{Medium(st, hw, gamma=0.010, tau\_ps=1.0, nref=3.3, R=None)} builds a saturable medium from a state set \code{st = dict(E, Z, Et, rho, N)} (lists, as stored in \code{studies/n1\_paper/tables.json}). Without \code{R} it uses a single relaxation time; with \code{R} (from \code{scattering.rate\_matrix}) it uses level-resolved relaxation. Methods: \code{populations(I1, I2)}, \code{chi(rho)} (m/V), \code{alpha(rho)} (1/m at $\omega$ and $2\omega$).
+
+\code{propagate(med, wg, P1, scheme, eta\_e=1.0, L\_max\_um=5000, steps\_per\_lcoh=32)} integrates the coupled-mode equations with RK4. \code{wg} is a dict with \code{n1, n2, G1, G2, O\_um, abg1\_cm, abg2\_cm, t\_stack\_um, w\_um, Lcoh\_um, lam1\_um}. \code{scheme} is \code{"none"}, \code{"perfect"} ($\Delta k=0$), \code{"sign"} ($\pm$\code{eta\_e}, the electrode factor) or \code{"onoff"}. It returns \code{x\_um, P1, P2}, the peak efficiency \code{eta} $=\max P_2/P_1(0)$ and its position \code{L\_opt\_um}.
+
+\code{propagate\_segments(segs, wg, P1, L\_max\_um)} handles media that differ from segment to segment: \code{segs} is a list of \code{(Medium, Lcoh\_um, s)} cycled along the guide, each segment one coherence length long with its own $\chi^{(2)}$, loss and phase mismatch (used for realistic Stark on/off QPM).
+
+\section{Worked examples}
+The file \code{docs/examples.py} runs the following steps; its output is in \code{docs/examples\_output.txt}.
+\begin{lstlisting}[language=Python]
+import numpy as np
+from qwkit import sp, scattering, waveguide, electrodes, propagation
+HW = 1.23984 / 10
+TW = [(58, "well"), (14, "barrier"), (34, "well"), (14, "barrier"), (58, "well")]
+AD = [(64, "well"), (10, "barrier"), (29, "well")]
+
+tw = sp.chi2_sc(TW, 55.0, HW, ns_cm2=5e11)        # 1. self-consistent chi(2)
+ad = sp.chi2_sc(AD, 0.0, HW, ns_cm2=5e11)
+m = sp.chi2_sc(TW, -55.0, HW, ns_cm2=5e11)       # 2. odd in F: tw["chi"] + m["chi"] ~ 0
+
+E, psi, Z, rho = sp.prepare(tw["r"])            # 3. LO-phonon rates
+R = scattering.rate_matrix(tw["r"]["z"], psi, E)
+
+med = propagation.Medium(sp.state_set(tw), HW, R=R)   # 4. saturable medium
+rho_I = med.populations(1e10, 0.0)              #    1 MW/cm^2 local pump intensity
+print(abs(med.chi(rho_I)) * 1e9, "nm/V")
+
+wg = dict(n1=3.231, n2=3.338, G1=0.395, G2=0.514, O_um=0.0531, abg1_cm=3.25,
+          abg2_cm=0.16, t_stack_um=1.512, w_um=15.0, Lcoh_um=23.4, lam1_um=10.0)
+res = propagation.propagate(med, wg, 1.26, "sign", eta_e=0.92, L_max_um=500.0)
+print(res["eta"] * 100, "% at", res["L_opt_um"], "um")   # 7. saturated SHG
+\end{lstlisting}
+Expected output (abridged):
+\begin{lstlisting}
+1. |chi2| triple well 63.8 nm/V, ADQW 120.7 nm/V
+2. chi2(+F) + chi2(-F) = 1.40e-06 pm/V (should be ~0)
+3. triple-well lifetimes: 2->1 2.62 ps, 3->2 0.79 ps, 3->1 1.96 ps
+4. I = 1 MW/cm2: |chi2| 35.1 nm/V, alpha(w) 490 1/cm
+5. n_eff 3.231 / 3.338, Gamma 0.39 / 0.52, loss 3.30 / 0.16 1/cm, Lcoh 23.5 um
+6. plateau field 54.6 kV/cm; QPM coefficient of sign(F) = 0.637 (ideal 2/pi = 0.637)
+7. 1.26 W pump: peak SH conversion 0.121% at 63 um
+\end{lstlisting}
+Example 5 uses a 0.02~$\mu$m grid for speed; the paper uses 0.01~$\mu$m (confinement 0.51 at 5~$\mu$m, $L_\mathrm{coh}=23.4~\mu$m).
+
+\paragraph{Designing a new structure.} Replace \code{TW} by your layer list, scan the field with a warm start, and compare with the ADQW at the same $n_s$:
+\begin{lstlisting}[language=Python]
+VH = None
+for F in range(0, 105, 5):
+    o = sp.chi2_sc(my_layers, float(F), HW, ns_cm2=5e11, VH0=VH); VH = o["r"]["VH"]
+    print(F, abs(o["chi"]) / abs(ad["chi"]))
+\end{lstlisting}
+\paragraph{New materials.} Add an entry to \code{core.MAT} (\code{V} offset in eV relative to InGaAs, band-edge mass \code{m}, gap \code{Eg}) and to \code{sp.EPS\_R}, as \code{studies/n1\_paper/stepwell.py} does for InGaAlAs quaternaries. For a different well material, also change the LO-phonon parameters passed to \code{scattering.rate\_matrix}.
+
+\section{Reproducing the papers}
+\paragraph{Software paper.} \code{python3 examples/validation/software\_figures.py} regenerates both figures of the software paper and \code{paper\_software/timing.json}; build the paper with \code{cd paper\_software; pdflatex qwkit\_software; bibtex qwkit\_software; pdflatex qwkit\_software; pdflatex qwkit\_software}.
+\paragraph{Triple-well QPM study.}
+From \code{studies/n1\_paper/}, with the top folder on \code{PYTHONPATH}, run the scripts in this order (total about 30~minutes on two cores). Each writes a JSON file read by later steps and by \code{paper\_figures.py}.
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}\begin{tabular}{@{}lll@{}}
+\toprule
+Script & Output & Used for \\ \midrule
+\code{tables.py} & \code{tables.json} & $\chi^{(2)}(F)$; state sets for all $n_s$ \\
+\code{curves\_sc.py} & \code{curves\_sc.json} & Fig.~2 \\
+\code{stepwell.py} & \code{stepwell.json} & stepped-well benchmark (Sec.~4.1) \\
+\code{waveguide\_design.py} & \code{waveguide.json} & Sec.~4.4, Fig.~4a \\
+\code{electrode\_study.py} & \code{electrodes.json} & electrode factor, Fig.~4b \\
+\code{linear\_grating.py} & \code{linear\_grating.json} & residual linear grating (Sec.~4.4) \\
+\code{rates\_study.py} & \code{rates.json} & LO-phonon rates, saturation intensities (Sec.~4.5) \\
+\code{propagation\_lo.py} & \code{propagation\_lo.json} & Table~3, Fig.~5 \\
+\code{stark\_realistic.py} & \code{stark\_realistic.json} & realistic Stark QPM \\
+\code{sensitivity.py} & \code{sensitivity.json} & Table~4 \\
+\code{propagation\_study.py} & \code{propagation.json} & single-$\tau$ comparison \\
+\code{adqw\_sign.py} & \code{propagation.json} & single-$\tau$, growth-reversed ADQW \\
+\code{summary\_lo.py} & \code{summary\_lo.json} & quoted ratios, crossovers, heating \\
+\code{paper\_figures.py} & \code{paper/figures/*.pdf} & Figs.~1--5 \\ \bottomrule
+\end{tabular}
+\end{center}
+Table~2 and Fig.~3 come from \code{studies/n1/ladder.py 58 14 34 50 64 10 29} and \code{studies/n1/errbudget.py 58 14 34 64 10 29}. Build the manuscript with \code{cd paper; pdflatex main; bibtex main; pdflatex main; pdflatex main}.
+
+\section{Validation}
+\code{tests/run\_tests.py} (or \code{pytest}) runs 25 tests (Table~2 of the software paper): analytic infinite-well limits, the three-level limit of the book formula, exact symmetry ($\chi^{(2)}(-F)=-\chi^{(2)}(F)$ to $10^{-6}$), translation invariance, parity with nonparabolicity, charged-sheet electrostatics, neutrality and convergence, depolarization limits, the symmetric slab waveguide, parallel-plate electrodes, QPM coefficients, the undepleted SHG limit, power conservation, two-level saturation, the LO-phonon form factor (brute force and short-range limit), a published LO-phonon benchmark, detailed balance, level-resolved rate equations, segmented propagation, the analytic finite well with BenDaniel--Duke matching (with second-order grid convergence), and the phase-mismatched $\mathrm{sinc}^2$ limit. \code{examples/validation/software\_figures.py} turns four of these checks and an end-to-end example into the figures of the software paper. Add a test for every new physical quantity, checked against an analytic limit or a published number.
+
+\section{Limitations}
+Single conduction band with literature parameters; Lorentzian lineshapes; first-order depolarization (no exciton-like or local-field corrections); LO-phonon scattering for electrons at the subband minima with bulk phonons (no interface-roughness, alloy or electron--electron scattering); parabolic 2D density of states for populations; steady-state rate equations (valid for pulses much longer than 1~ps); planar waveguide; uniform-permittivity electrode model; assumed mid-infrared alloy indices; no thermal or transport model. These limitations are discussed in the software paper (Sec.~7) and the N1 manuscript (Sec.~5).
+
+\section{Troubleshooting}
+\begin{itemize}
+\item \emph{\code{ModuleNotFoundError: qwkit}}: run from the top folder or set \code{PYTHONPATH} to it.
+\item \emph{Fewer states than expected}: \code{prepare} keeps only states with 80\% of their probability in the active region; at high fields upper levels become quasi-bound and drop out (this is physical).
+\item \emph{Slow field scans}: pass the previous \code{r["VH"]} as \code{VH0} to warm-start the Hartree iteration.
+\item \emph{Spurious $\chi^{(2)}$ at zero field in a symmetric structure}: the structure or doping is not mirror-symmetric, or the grid step does not divide the layer thicknesses evenly; keep \code{dz=0.5}~\AA{} with integer-\AA{} layers.
+\end{itemize}
+\end{document}
