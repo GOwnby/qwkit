@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23444121.svg)](https://doi.org/10.5281/zenodo.23444121)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23444120.svg)](https://doi.org/10.5281/zenodo.23444120)
 
 # qwkit 0.7.0
 
@@ -11,11 +11,11 @@ calculations that are usually done with separate in-house codes:
 | --- | --- |
 | `qwkit.core` | One-band envelope-function states with BenDaniel-Duke operator and Kane nonparabolicity (index-tracked), dipoles, Fermi-Dirac populations, density-matrix chi(2) for arbitrary populations |
 | `qwkit.sp` | Self-consistent Schroedinger-Poisson for a voltage-biased doped period, Ando depolarisation shifts, chi(2) with shifted transitions |
-| `qwkit.sens` | Exact first-order sensitivities of the self-consistent SchrÃ¶dingerâ€“Poisson model (layer thicknesses, field, doping, band offset, masses, nonparabolicity gaps, permittivities) by implicit differentiation, propagated to Ando-shifted transitions, chi(2), absorption and the waveguide efficiency merit |
+| `qwkit.sens` | Exact first-order sensitivities of the self-consistent Schrödinger–Poisson model (layer thicknesses, field, doping, band offset, masses, nonparabolicity gaps, permittivities) by implicit differentiation, propagated to Ando-shifted transitions, chi(2), absorption and the waveguide efficiency merit |
 | `qwkit.thermal` | Intersubband thermal emitters at 300-1000 K: Varshni gaps, intrinsic and L-valley carriers, ISB absorption with thermal occupations and in-plane nonparabolicity, LO-phonon linewidth, coupled-mode emissivity with background, generation leakage, two-surface TPV detailed balance |
 | `qwkit.tdh` | Time-dependent Hartree (random-phase) density-matrix response in the subband basis: collective chi(1) and chi(2) by frequency-domain perturbation theory, and full nonlinear real-time integration |
 | `qwkit.interface` | Self-consistent 2DEG at a single polar heterointerface: Kane-nonparabolic subbands and in-plane dispersion, Fermi-level pinning by compensating acceptors, positive sheets at the interface and cap surface or a fixed interface sheet (`sigma_int`), optional ionized donors in the cap (`nd_cap`, e.g. electrolyte-created oxygen vacancies) with the remaining positive charge on the surface, at the interface or in the donors (`rest_to`), optional local exchange-correlation |
-| `qwkit.transport` | Low-temperature multisubband transport of a 2DEG: Coulomb (point-charge sheets and slabs), charged-dislocation and interface-roughness scattering with multisubband RPA screening and coupled Siggiaâ€“Kwok relaxation times; Hall density and mobility of parallel subbands at any field |
+| `qwkit.transport` | Low-temperature multisubband transport of a 2DEG: Coulomb (point-charge sheets and slabs), charged-dislocation and interface-roughness scattering with multisubband RPA screening and coupled Siggia–Kwok relaxation times; Hall density and mobility of parallel subbands at any field |
 | `qwkit.krpa` | k-resolved time-dependent Hartree (RPA) linear and second-order response with in-plane nonparabolicity and a polar-phonon background; per-mode Froehlich factors |
 | `qwkit.scattering` | Froehlich LO-phonon intersubband rates with detailed balance |
 | `qwkit.waveguide` | TM modes of planar multilayer waveguides (InP dispersion, Drude, gold), confinement, nonlinear overlap |
@@ -51,9 +51,9 @@ More worked examples: `docs/examples.py` (expected output in `docs/examples_outp
 
 ## Documentation
 
-- `qwkit_user_guide.pdf` â€” installation, units and conventions, module reference, worked examples,
+- `qwkit_user_guide.pdf` — installation, units and conventions, module reference, worked examples,
   reproduction of every published figure, validation, limitations, troubleshooting (source: `docs/guide.tex`).
-- `qwkit_software_paper.pdf` â€” software paper: design, validation and research use (source: `paper_software/`).
+- `qwkit_software_paper.pdf` — software paper: design, validation and research use (source: `paper_software/`).
 
 ## Tests
 

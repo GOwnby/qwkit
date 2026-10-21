@@ -330,3 +330,27 @@ Other submission items (venue, template, AI-use policy, e-mail/funding line) are
     Open: patterns are local optima (realistic refinement cannot add electrodes), so gains are lower bounds; 2D
     electrostatics ignore ridge-edge fringing; level placement not optimized; venue (Phys. Rev. Applied or Opt.
     Express) after N1 (P1.4) and N1 item 51. Difference-frequency extension waits for the qwkit DFG module (P3.C4).
+53. Pre-review pass (20 Oct 2026; working folder QW_research, one repository per paper, Zenodo v1.0.0 DOIs).
+    Self-containment: in its own folder, NL-02, N1, N2 and MAT-03 could not run their figure/number scripts, and the
+    MAT-02 re-computation scripts could not start, because they read modules or outputs of companion studies. The
+    needed files are now copied into each folder at the same relative path, with README_UPSTREAM.md naming the origin
+    archive and the generating script (N1: 5 files from nl02; NL-02: 7 from n1_paper; N2: 9 from n1_paper and 1 from
+    nl02; MAT-02: 3 modules from mat01; MAT-03: mat01/common.py and 2 mat02 outputs). Checked by running prove_paper.py
+    and starting every study script in an isolated copy of each folder. Not redistributable and not included: the
+    600 dpi crops of Lee et al.'s figures used by studies/mat03/digitization (the digitized JSON values are included).
+    Manuscripts: Data and code availability statement before the references (qwkit DOI and the paper's own DOI);
+    own-work and qwkit citations replaced by the Zenodo records (ZENODO_CITATIONS.bib); dates 20 Oct 2026; MAT-01
+    parameter table no longer overflows the margin; software paper's availability section updated (public repo).
+    Meyer et al. APL 67, 608 (1995) read in full: N1 and N2 wording revised (SUBMISSION_CHECKLIST); unverified DOIs of
+    Meyer 1995 (APL and IEEE JQE) removed. OPEN: (a) publish a new release of each paper repository (the v1.0.0
+    archives lack these changes) and decide between version and concept DOIs in the statements; (b) N1 item 51.
+54. N1 item 51 RESOLVED (20-21 Oct 2026). All electrically written schemes of N1 (triple well at 55 kV/cm and
+    bias-optimized, bipolar ADQW, Stark on/off, the two-field optimization, the detuned-pump comparison and the
+    sensitivity table) are now propagated through the electrode fields (N2 field model, three stack heights, media on
+    a 5 kV/cm bias grid; bias maps added at 1e10, 3e10, 2e11 cm^-2) with a 188 kV/cm breakdown limit between
+    neighbouring electrodes, instead of the 0.92 electrode factor (studies/n1_paper/realfield_*.py, rerun_realfield.sh;
+    N1 conventions otherwise kept: no index saturation, segments one coherence length). The conclusions stand: bipolar
+    ADQW (+-55-90 kV/cm) best above 1 W, 1.4-2.4x the bias-optimized triple well (was 1.7-2.2x); triple well 1.9-2.4x
+    Stark at 1.26 W, 1.2-1.8x at 10 W, 1.9-9.7x growth reversal; best two-field ADQW pairs (+70,-50) and (+100,-80)
+    kV/cm (as in N2). Tables 3-6, Fig. 5, abstract, discussion and conclusion updated; N2's companion paragraph updated.
+    Repositories: concept DOIs and new releases via update_repos.sh / use_concept_dois.py in QW_research.
